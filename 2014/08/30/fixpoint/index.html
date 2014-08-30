@@ -86,7 +86,7 @@ problem to solve
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fixpoint"><span class="toc-number">1.</span> <span class="toc-text">fixpoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#problem_to_solve"><span class="toc-number">2.</span> <span class="toc-text">problem to solve</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#verification"><span class="toc-number">3.</span> <span class="toc-text">verification</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fixpoint"><span class="toc-number">1.</span> <span class="toc-text">fixpoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#problem_to_solve"><span class="toc-number">2.</span> <span class="toc-text">problem to solve</span></a></li></ol>
 		
 		</div>
 		
@@ -109,8 +109,8 @@ problem to solve
 定义等式右边非fac部分为函数H
 <pre><code>
  fac = H fac
-</code></pre>
-则问题转化为求函数H的不动点。
+</code></pre>则问题转化为求函数H的不动点。
+
 ##Y combinator
 
 Y combinator是由Haskell Curry发现的计算lambda演算中函数不动点的高阶函数。  
@@ -130,9 +130,10 @@ Y h = (lambda(f)
     = h ( (lambda(x) h (x x))
           (lambda(x) h (x x)) )
     = h (Y h)
-</code></pre>
+</code></pre>满足定义。
 
-<h2 id="verification">verification</h2>
+##verification
+
 <pre><code>
 fac 0 = Y H 0
       = H (Y H) 0
