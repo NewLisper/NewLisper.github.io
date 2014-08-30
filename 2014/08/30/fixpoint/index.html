@@ -9,10 +9,10 @@
     
     <meta name="author" content="NewLisper">
     
-    <meta name="description" content="c1
-测试test
-c2
-aaabbb">
+    <meta name="description" content="fixpoint
+对于一个函数f，其不动点是定义域中的元素x，满足f(x) = x。例如f(x) ＝ x^2，0和1就是其不动点。
+problem to solve
+在lambda演算中不支持lambda项的命名，然而递归函数需要引用自身才能定义，那么需要一种方法使用匿名函数来实现递归函数。用Sch">
     
     
     
@@ -86,14 +86,81 @@ aaabbb">
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#c1"><span class="toc-number">1.</span> <span class="toc-text">c1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#c2"><span class="toc-number">2.</span> <span class="toc-text">c2</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fixpoint"><span class="toc-number">1.</span> <span class="toc-text">fixpoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#problem_to_solve"><span class="toc-number">2.</span> <span class="toc-text">problem to solve</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="c1">c1</h2>
-<p>测试<br>test</p>
-<h2 id="c2">c2</h2>
-<p>aaa<br>bbb</p>
+		<h2 id="fixpoint">fixpoint</h2>
+<p>对于一个函数f，其不动点是定义域中的元素x，满足f(x) = x。<br>例如f(x) ＝ x^2，0和1就是其不动点。</p>
+<h2 id="problem_to_solve">problem to solve</h2>
+<p>在lambda演算中不支持lambda项的命名，然而递归函数需要引用自身才能定义，那么需要一种方法使用匿名函数来实现递归函数。<br>用Scheme语言来描述这个问题（Scheme基本可看作lambda演算的扩展)：<br>对于递归函数fac</p>
+<pre><code>
+ fac = (lambda(n)
+         (if (= n 0) 1
+           (* n (fac (- n 1)))))
+</code></pre>
+需消去等式右边的fac，改写以上代码为：
+<pre><code>
+ fac = (lambda(f)
+        (lambda(n)
+          (if (= n 0) 1
+            (* n (f (- n 1)))))) fac
+</code></pre>
+定义等式右边非fac部分为函数H
+<pre><code>
+ fac = H fac
+</code></pre>
+则问题转化为求函数H的不动点
+
+
+
+##Y combinator
+Y combinator是由Haskell Curry发现的计算lambda演算中函数不动点的高阶函数。  
+<pre><code>
+Y = (lambda(f) 
+     ( (lambda(x) f (x x))
+       (lambda(x) f (x x)) ))
+</code></pre>
+对于任意函数h
+<pre><code>
+Y h = (lambda(f) 
+     ( (lambda(x) f (x x))
+       (lambda(x) f (x x)) )) h
+
+    = ( (lambda(x) h (x x)) 
+        (lambda(x) h (x x)) )
+    = h ( (lambda(x) h (x x))
+          (lambda(x) h (x x)) )
+    = h (Y h)
+</code></pre>
+满足定义。
+
+##verification
+<pre><code>
+fac 0 = Y H 0
+      = H (Y H) 0
+      = (lambda(f)
+         (lambda(n)
+          (if (= n 0) 1
+            (* n (f (- n 1)))))) (Y H) 0
+      = (lambda(n)
+          (if (= n 0) 1
+            (* n ((Y H) (- n 1))))) 0
+      = 1
+
+fac 1 = Y H 1
+      = H (Y H) 1
+      = (lambda(f)
+         (lambda(n)
+          (if (= n 0) 1
+            (* n (f (- n 1)))))) (Y H) 1
+      = (lambda(n)
+          (if (= n 0) 1
+            (* n ((Y H) (- n 1))))) 1
+      = (* 1 ((Y H) 0))
+      = (* 1 1)
+      = 1
+</code></pre>
   
 	</div>
 		<footer class="article-footer clearfix">
