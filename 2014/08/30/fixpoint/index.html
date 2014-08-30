@@ -111,7 +111,6 @@ problem to solve
  fac = H fac
 </code></pre>
 则问题转化为求函数H的不动点
-
 ##Y combinator
 Y combinator是由Haskell Curry发现的计算lambda演算中函数不动点的高阶函数。  
 <pre><code>
@@ -132,7 +131,6 @@ Y h = (lambda(f)
     = h (Y h)
 </code></pre>
 满足定义。
-
 ##verification
 <pre><code>
 fac 0 = Y H 0
