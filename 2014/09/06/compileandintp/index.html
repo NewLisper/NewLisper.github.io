@@ -4,15 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>fixpoint &amp; Y combinator | lambda the ultimate</title>
+    <title>编译与解释 | lambda the ultimate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="NewLisper">
     
-    <meta name="description" content="fixpoint
-对于一个函数f，其不动点是定义域中的元素x，满足f(x) = x。例如f(x) ＝ x^2，0和1就是其不动点。
-problem to solve
-在lambda演算中不支持lambda项的命名，然而递归函数需要引用自身才能定义，那么需要一种方法使用匿名函数来实现递归函数。用Sch">
+    <meta name="description" content="编译与解释
+学过编译原理的人都了解编译的概念，即将某种高级语言转化为等价的汇编指令来让机器执行。不过这只是比较常见的一种编译形式，所有语言之间等价语义的转换过程都可以叫作编译过程。用自然语言来类比，英语汉语之间的翻译过程就是一种编译，只不过由于自然语言属于上下文有关语言，相关的编译器无法构造(所以需">
     
     
     
@@ -71,12 +69,12 @@ problem to solve
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/08/30/fixpoint/" title="fixpoint &amp; Y combinator" itemprop="url">fixpoint &amp; Y combinator</a>
+      <a href="/2014/09/06/compileandintp/" title="编译与解释" itemprop="url">编译与解释</a>
   </h1>
   <p class="article-author">By
       <a href="http://yoursite.com/about" title="NewLisper" target="_blank">NewLisper</a>
   <p class="article-time">
-    <time datetime="2014-08-30T06:03:21.000Z" itemprop="datePublished">发表于8月 30 2014</time>
+    <time datetime="2014-09-05T20:43:21.000Z" itemprop="datePublished">发表于9月 6 2014</time>
     
   </p>
 </header>
@@ -86,88 +84,29 @@ problem to solve
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fixpoint"><span class="toc-number">1.</span> <span class="toc-text">fixpoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#problem_to_solve"><span class="toc-number">2.</span> <span class="toc-text">problem to solve</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Y_combinator"><span class="toc-number">3.</span> <span class="toc-text">Y combinator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#verification"><span class="toc-number">4.</span> <span class="toc-text">verification</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#编译与解释"><span class="toc-number">1.</span> <span class="toc-text">编译与解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编译与元编程"><span class="toc-number">2.</span> <span class="toc-text">编译与元编程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解释与计算"><span class="toc-number">3.</span> <span class="toc-text">解释与计算</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="fixpoint">fixpoint</h2>
-<p>对于一个函数f，其不动点是定义域中的元素x，满足f(x) = x。<br>例如f(x) ＝ x^2，0和1就是其不动点。</p>
-<h2 id="problem_to_solve">problem to solve</h2>
-<p>在lambda演算中不支持lambda项的命名，然而递归函数需要引用自身才能定义，那么需要一种方法使用匿名函数来实现递归函数。<br>用Scheme语言来描述这个问题（Scheme基本可看作lambda演算的扩展)：<br>对于递归函数fac</p>
-<pre><code>
- fac = (lambda(n)
-         (if (= n 0) 1
-           (* n (fac (- n 1)))))
-</code></pre>
-需消去等式右边的fac，改写以上代码为：
-<pre><code>
- fac = (lambda(f)
-        (lambda(n)
-          (if (= n 0) 1
-            (* n (f (- n 1)))))) fac
-</code></pre>
-定义等式右边非fac部分为函数H，则问题转化为求函数H的不动点。<pre><code>
- fac = H fac
-</code></pre>
-
-<h2 id="Y_combinator">Y combinator</h2>
-<p>Y combinator是由Haskell Curry发现的计算lambda演算中函数不动点的高阶函数。  </p>
-<pre><code>
-Y = (lambda(f) 
-     ( (lambda(x) f (x x))
-       (lambda(x) f (x x)) ))
-</code></pre>
-对于任意函数h，Y满足定义。
-<pre><code>
-Y h = (lambda(f) 
-     ( (lambda(x) f (x x))
-       (lambda(x) f (x x)) )) h
-
-    = ( (lambda(x) h (x x)) 
-        (lambda(x) h (x x)) )
-    = h ( (lambda(x) h (x x))
-          (lambda(x) h (x x)) )
-    = h (Y h)
-</code></pre>
-
-<h2 id="verification">verification</h2>
-<pre><code>
-fac 0 = Y H 0
-      = H (Y H) 0
-      = (lambda(f)
-         (lambda(n)
-          (if (= n 0) 1
-            (* n (f (- n 1)))))) (Y H) 0
-      = (lambda(n)
-          (if (= n 0) 1
-            (* n ((Y H) (- n 1))))) 0
-      = 1
-
-fac 1 = Y H 1
-      = H (Y H) 1
-      = (lambda(f)
-         (lambda(n)
-          (if (= n 0) 1
-            (* n (f (- n 1)))))) (Y H) 1
-      = (lambda(n)
-          (if (= n 0) 1
-            (* n ((Y H) (- n 1))))) 1
-      = (* 1 ((Y H) 0))
-      = (* 1 1)
-      = 1
-</code></pre>  
+		<h2 id="编译与解释">编译与解释</h2>
+<p>学过编译原理的人都了解编译的概念，即将某种高级语言转化为等价的汇编指令来让机器执行。不过这只是比较常见的一种编译形式，所有语言之间等价语义的转换过程都可以叫作编译过程。用自然语言来类比，英语汉语之间的翻译过程就是一种编译，只不过由于自然语言属于上下文有关语言，相关的编译器无法构造(所以需要人肉编译器)。而解释就是语言语义执行的过程。每个人在成长过程中都生成了一台母语解释器，每当接收到母语语法文字的时候，解释器都会解释其语义。许多人在学习非母语(例如英语)的时候都会有一种隔阂感，这是因为体内不完善的编译器先将其编译到母语(很多人这个过程都会丢失或增加语义)，然后再由母语解释器解释。所以英语真正学的好的人体内都会新增一台英语解释器，当接收到英语文字的时候，直接跳过编译过程解释执行，这样语义不会改变而且响应速度很快。<br>在程序语言的世界里，有些语言是编译到汇编指令执行(如c,c++)，有些语言是由解释器直接解释执行(如js)。但这只是一般情况，语言不分编译型或解释型，实现方式才分。有的语言(如Scheme)既有解释器又有编译器的实现。有些语言(如Java)的实现甚至混合了编译和解释过程，Java代码首先会编译到Java字节码，然后由Java虚拟机执行。这里Java虚拟机就是一种解释器，相应的微软的.NET也是一种解释器。对于那些直接编译到汇编指令(其实其他实现方式也最终会到这一步)的语言，其解释器就是cpu和内存等硬件。</p>
+<h2 id="编译与元编程">编译与元编程</h2>
+<p>所谓元编程，就是编程的编程，能写代码的代码，所以编译就是一种典型的元编程。<br>为了允许程序员突破语言既有语法的限制而不重新实现该语言，许多语言都提供了宏机制。c语言的define宏就是一种元编程，在编译器编译之前预处理器会对源代码进行基于token的替换，这种元编程机制十分简陋，很容易出错。而程序语言的另一个极端lisp却拥有至高无上的元编程能力，也是我曾经一度追求的屠龙之技。lisp的宏之所以强大是因为lisp没有语法，那些恼人的括号和expression组成的s表达式基本可以看成抽象语法树，而lisp的宏展开系统可以直接对语法树中的语法对象进行匹配和替换。由于抽象语法树携带了语法结构信息，宏展开系统能更好的检查宏语法错误。<br>编程中最顶级的抽象手段就是语法抽象。数学家提出新的理论需要先定义对应的形式符号系统，才能更好的描述问题和解决问题。软件开发也类似，对特定业务如果先定义好领域特定语言，让语言来适应应用场景，不仅可以提高开发效率还能很好的解决需求变化的问题。这也是lisp被许多人神话为屠龙之技的原因。<br>但是一般的公司不会允许程序员随意使用宏，因为新增的语法你的队友很有可能不清楚该怎么正确使用，一旦出现bug很难跟踪。工程界最重要的就是统一标准，而语言内置的语法有统一标准，程序员可以看官方手册学习。</p>
+<h2 id="解释与计算">解释与计算</h2>
+<p>计算机是数学家一次失败思考的产物。 ——无名氏<br>曾经有一个追梦少年，他梦想将人类的思想用一种形式语言系统来描述，并基于这个系统做计算，从而得出所有真理，他就是莱布尼茨。但是他在有生之年未能完成他的梦想。<br>在他死后多年，数学家乔治・布尔提出了一种符号逻辑(布尔逻辑)。<br>后来数学家弗雷格又在布尔的基础上建立了数理逻辑的原型，至此离莱布尼茨当初的梦想越来越近了。<br>同样有着莱布尼茨之梦的数学家希尔伯特(川大小神童的偶像哟)希望为所有的数学建立统一的形式系统，并能从该系统证明出所有的数学真命题。<br>然而随后哥德尔以其天才的证明方法证明了这种系统是不完备的。对于任意一个包含了一阶逻辑(数理逻辑基础)和初等数论公理(初等数论是所有数学的一部分)的形式系统，都存在某个命题，它既不能被证明是真的也不能被证明是假的，这就是著名的哥德尔不完备性定理。这条定理同时也部分否定了莱布尼茨的梦想，人类无法构造一套形式系统来产生所有的真理，必定存在不可证明的真理。<br>希尔伯特得知这一点后很失望但也接受了这一事实。他想退而求其次，既然存在不能证明的命题，那么会不会存在一种有限步骤的算法能判断任意给定命题的真假呢。<br>阿隆佐·邱奇和图灵几乎同时给出了否定的答案，但是两人构造了两种截然不同的系统——lambda演算和图灵机。lambda演算成为几乎现代所有编程语言的基石，而图灵机则成为现代通用计算机的原型(机智的冯·诺依曼看了图灵的paper后立马意识到这个可以用来造计算机，所以现在所说的冯·诺依曼结构其实就是通用图灵机)。<br>之前有说cpu和内存等硬件就是汇编语言的解释器，而这种冯·诺依曼结构原型又是通用图灵机，图灵机是用来描述计算的抽象模型，所以解释的本质就是在做计算。与图灵机拥有等价计算能力的除了lambda演算还有哥德尔的递归函数，从某种角度来说它们都是解释器。</p>
+  
 	</div>
 		<footer class="article-footer clearfix">
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/计算理论/">计算理论</a>
+  <a class="article-category-link" href="/categories/程序语言/">程序语言</a>
 </div>
 
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/lambda演算/">lambda演算</a>
+  <span></span> <a href="/tags/编译/">编译</a><a href="/tags/解释/">解释</a>
   </div>
 
 
@@ -205,14 +144,14 @@ fac 1 = Y H 1
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2014/09/06/compileandintp/" title="编译与解释">
-  <strong>上一篇：</strong><br/>
-  <span>
-  编译与解释</span>
+
+<div class="next">
+<a href="/2014/08/30/fixpoint/"  title="fixpoint &amp; Y combinator">
+ <strong>下一篇：</strong><br/> 
+ <span>fixpoint &amp; Y combinator
+</span>
 </a>
 </div>
-
 
 </nav>
 
