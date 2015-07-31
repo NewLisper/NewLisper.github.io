@@ -4,15 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>fixpoint &amp; Y combinator | lambda the ultimate</title>
+    <title>future and promise | lambda the ultimate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="NewLisper">
     
-    <meta name="description" content="fixpoint
-对于一个函数f，其不动点是定义域中的元素x，满足f(x) = x。例如f(x) ＝ x^2，0和1就是其不动点。
-problem to solve
-在lambda演算中不支持lambda项的命名，然而递归函数需要引用自身才能定义，那么需要一种方法使用匿名函数来实现递归函数。用Sch">
+    <meta name="description" content="future &amp;amp; promise
+future和promise可以理解为一段computation的代理，创建它时这段computation并未执行，但在未来向它索要computation result时它能保证给出值。很多主流语言如C++，Java，Scala都通过库来实现了future和">
     
     
     
@@ -71,12 +69,12 @@ problem to solve
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/08/30/fixpoint/" title="fixpoint &amp; Y combinator" itemprop="url">fixpoint &amp; Y combinator</a>
+      <a href="/2015/07/31/future/" title="future and promise" itemprop="url">future and promise</a>
   </h1>
   <p class="article-author">By
       <a href="http://yoursite.com/about" title="NewLisper" target="_blank">NewLisper</a>
   <p class="article-time">
-    <time datetime="2014-08-30T06:03:21.000Z" itemprop="datePublished">发表于8月 30 2014</time>
+    <time datetime="2015-07-31T15:10:31.000Z" itemprop="datePublished">发表于7月 31 2015</time>
     
   </p>
 </header>
@@ -86,88 +84,33 @@ problem to solve
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fixpoint"><span class="toc-number">1.</span> <span class="toc-text">fixpoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#problem_to_solve"><span class="toc-number">2.</span> <span class="toc-text">problem to solve</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Y_combinator"><span class="toc-number">3.</span> <span class="toc-text">Y combinator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#verification"><span class="toc-number">4.</span> <span class="toc-text">verification</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#future_&amp;_promise"><span class="toc-number">1.</span> <span class="toc-text">future &amp; promise</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#future实现"><span class="toc-number">2.</span> <span class="toc-text">future实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#promise实现"><span class="toc-number">3.</span> <span class="toc-text">promise实现</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="fixpoint">fixpoint</h2>
-<p>对于一个函数f，其不动点是定义域中的元素x，满足f(x) = x。<br>例如f(x) ＝ x^2，0和1就是其不动点。</p>
-<h2 id="problem_to_solve">problem to solve</h2>
-<p>在lambda演算中不支持lambda项的命名，然而递归函数需要引用自身才能定义，那么需要一种方法使用匿名函数来实现递归函数。<br>用Scheme语言来描述这个问题（Scheme基本可看作lambda演算的扩展)：<br>对于递归函数fac</p>
-<pre><code>
- fac = (lambda(n)
-         (if (= n 0) 1
-           (* n (fac (- n 1)))))
-</code></pre>
-需消去等式右边的fac，改写以上代码为：
-<pre><code>
- fac = (lambda(f)
-        (lambda(n)
-          (if (= n 0) 1
-            (* n (f (- n 1)))))) fac
-</code></pre>
-定义等式右边非fac部分为函数H，则问题转化为求函数H的不动点。<pre><code>
- fac = H fac
-</code></pre>
-
-<h2 id="Y_combinator">Y combinator</h2>
-<p>Y combinator是由Haskell Curry发现的计算lambda演算中函数不动点的高阶函数。  </p>
-<pre><code>
-Y = (lambda(f) 
-     ( (lambda(x) f (x x))
-       (lambda(x) f (x x)) ))
-</code></pre>
-对于任意函数h，Y满足定义。
-<pre><code>
-Y h = (lambda(f) 
-     ( (lambda(x) f (x x))
-       (lambda(x) f (x x)) )) h
-
-    = ( (lambda(x) h (x x)) 
-        (lambda(x) h (x x)) )
-    = h ( (lambda(x) h (x x))
-          (lambda(x) h (x x)) )
-    = h (Y h)
-</code></pre>
-
-<h2 id="verification">verification</h2>
-<pre><code>
-fac 0 = Y H 0
-      = H (Y H) 0
-      = (lambda(f)
-         (lambda(n)
-          (if (= n 0) 1
-            (* n (f (- n 1)))))) (Y H) 0
-      = (lambda(n)
-          (if (= n 0) 1
-            (* n ((Y H) (- n 1))))) 0
-      = 1
-
-fac 1 = Y H 1
-      = H (Y H) 1
-      = (lambda(f)
-         (lambda(n)
-          (if (= n 0) 1
-            (* n (f (- n 1)))))) (Y H) 1
-      = (lambda(n)
-          (if (= n 0) 1
-            (* n ((Y H) (- n 1))))) 1
-      = (* 1 ((Y H) 0))
-      = (* 1 1)
-      = 1
-</code></pre>  
+		<h2 id="future_&amp;_promise">future &amp; promise</h2>
+<p>future和promise可以理解为一段computation的代理，创建它时这段computation并未执行，但在未来向它索要computation result时它能保证给出值。<br>很多主流语言如C++，Java，Scala都通过库来实现了future和promise，而erlang中没有必要这么做，因为很容易通过actor model实现类似功能。但是通过erlang来简单的实现future和promise对理解它们很有帮助，因此本文主要介绍实现过程。</p>
+<h2 id="future实现">future实现</h2>
+<p>future的实现主要参考erlang之父Joe Armstrong的某次会议slides。</p>
+<p><pre><code><br>future(Fun) -&gt;<br>    Pid = self(),<br>    spawn(fun()-&gt;Pid!{self(),Fun()} end).<br></code></pre><br>参数Fun是一个函数，表示需要异步执行的computation。<br>第二行self()返回当前actor的pid并绑到Pid。<br>第三行新建一个actor，这个actor通过调用Fun来执行computation，计算完成后将result和自身pid(这里的self()返回新建actor的pid)打包发送给当前actor。<br>future函数返回最后一行expression，也就是spawn函数的返回值。spawn返回新建actor的pid，所以这里一个future其实是一个pid。</p>
+<p><pre><code><br>getVal(Future) -&gt;<br>    receive {Future,Val} -&gt; Val end.<br></code></pre><br>getVal接收一个Future值(新建actor的pid)，receive查看当前actor的信箱，通过Future值对消息进行pattern match，识别出新建actor发来的消息。<br>如果新建actor完成了computation，信箱里就会有相应的消息，则可取出computation result。<br>否则，信箱没有对应消息，receive的求值会一直block，直到有消息发来。</p>
+<p><pre><code><br>loop() -&gt; loop().</p>
+<p>foo() -&gt;<br>  F = future(fun() -&gt;io:format(“compute future~n”),1＋2＋3 end),<br>  io:format(“print before computing future~n”),<br>  io:format(“~p~n”,[getVal(F)]),<br>  io:format(“print after computing future~n”).<br></code></pre><br>调用foo()，会输出：<br>print before computing future<br>compute future<br>6<br>print after computing future      </p>
+<p>将1＋2＋3换成loop()，则会输出：<br>print before computing future<br>compute future<br>然后就会一直block。</p>
+<h2 id="promise实现">promise实现</h2>
+  
 	</div>
 		<footer class="article-footer clearfix">
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/计算理论/">计算理论</a>
+  <a class="article-category-link" href="/categories/并发模型/">并发模型</a>
 </div>
 
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/lambda演算/">lambda演算</a>
+  <span></span> <a href="/tags/erlang/">erlang</a><a href="/tags/异步/">异步</a>
   </div>
 
 
@@ -205,14 +148,14 @@ fac 1 = Y H 1
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2014/09/06/compileandintp/" title="编译与解释">
-  <strong>上一篇：</strong><br/>
-  <span>
-  编译与解释</span>
+
+<div class="next">
+<a href="/2014/09/06/compileandintp/"  title="编译与解释">
+ <strong>下一篇：</strong><br/> 
+ <span>编译与解释
+</span>
 </a>
 </div>
-
 
 </nav>
 
