@@ -84,7 +84,7 @@ future和promise可以理解为一段computation的代理，创建它时这段co
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#future_&amp;_promise"><span class="toc-number">1.</span> <span class="toc-text">future &amp; promise</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#future实现"><span class="toc-number">2.</span> <span class="toc-text">future实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#promise实现"><span class="toc-number">3.</span> <span class="toc-text">promise实现</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#future_&amp;_promise"><span class="toc-number">1.</span> <span class="toc-text">future &amp; promise</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#future实现"><span class="toc-number">2.</span> <span class="toc-text">future实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#promise实现"><span class="toc-number">3.</span> <span class="toc-text">promise实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#形象的理解"><span class="toc-number">4.</span> <span class="toc-text">形象的理解</span></a></li></ol>
 		
 		</div>
 		
@@ -97,6 +97,14 @@ future和promise可以理解为一段computation的代理，创建它时这段co
 <p><pre><code><br>loop() -&gt; loop().<br>foo() -&gt;<br>  F = future(fun() -&gt;io:format(“compute future~n”),1＋2＋3 end),<br>  io:format(“print before computing future~n”),<br>  io:format(“~p~n”,[getVal(F)]),<br>  io:format(“print after computing future~n”).<br></code></pre><br>调用foo()，会输出：<br>print before computing future<br>compute future<br>6<br>print after computing future      </p>
 <p>将1＋2＋3换成loop()，则会输出：<br>print before computing future<br>compute future<br>然后就会一直block。</p>
 <h2 id="promise实现">promise实现</h2>
+<p> <pre><code><br>promise() -&gt; self().<br></code></pre><br>根据future实现的启发，将promise定义为当前actor的pid。        </p>
+<p> <pre><code><br>getVal(Promise) -&gt;<br>     receive {Promise,Val} -&gt; Val end.<br></code></pre><br>与之前一样，只不过使用者变成了新建的actor。    </p>
+<p> <pre><code><br>deliver(Val,Ls) -&gt; [ T ! {self(),Val} || T &lt;- Ls ].<br></code></pre><br>Val是当前actor计算出来的结果，Ls是使用promise的所有新建actor组成的List。     </p>
+<p> <pre><code><br>compuBaseOnPro(Promise) -&gt;<br>    io:format(“do something else~n”),<br>    io:format(“~p~n”,[1+2+getVal(Promise)]).<br>bar() -&gt;<br>   P = promise(),<br>   Ls = [spawn(module_name,compuBaseOnPro,[P]),<br>         spawn(module_name,compuBaseOnPro,[P])],<br>   io:format(“compute promise~n”),<br>   deliver(3,Ls),<br>   finish.<br></code></pre><br>调用bar()，会输出：<br>compute promise<br>do something else<br>do something else<br>6<br>6<br>finish   </p>
+<h2 id="形象的理解">形象的理解</h2>
+<p>future：当A有一个computation想要异步执行，它会对B说：“你帮我算吧，算完给我写信，我先去干别的事情”。此时A拥有B的名字(B的pid也就是future)，在未来的某一时刻，A需要之前那段computation的result，A就会根据B的名字去查自己的信箱，如果有B的来信就取出值，否则就一直苦等。</p>
+<p>promise：当A手头有四件任务，它将三件任务分发给B，C，D做，但是这三件任务的完成都依赖某一段computation。A说：“这段computation我给它取名promise，你们就当它已经算好，不要等我真的算完才开始干活，我算好了会告诉你们的”。过了一会B，C都早已算到需要computation result的地方，它们不断查自己的信箱开始苦等，而D还在继续可以进行的计算。这时候A算好了，并把结果分发到B，C，D的信箱，B和C查了信箱后继续开始自己的计算，而D过一会才用到这个结果。</p>
+<p>future和promise本质上差不多，区别在于创建future的进程是其consumer，计算任务依赖于别的进程；而创建promise的进程是其provider，计算任务依赖于自身。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
