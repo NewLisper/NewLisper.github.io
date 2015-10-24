@@ -89,7 +89,7 @@
 		</div>
 		
 		<h2 id="Bidirectional_Transformation">Bidirectional Transformation</h2>
-<p><img src="/Users/kirall/Documents/blog/source/_post/bx.png]" alt="bx"><br>给定一个数据源s，我们想从中抽取部分信息作为v，则需要写一个get程序，<br>类型为Source -&gt; View。<br>用户可能修改v为v’,我们希望将这种修改反应到原来的s上，则需要写一个put程序，<br>类型为Source -&gt; View -&gt; Source。<br>对于任意get,put，如果它们满足GetPut和PutGet law，则是Well-Behaved。<br>PutGet law的直觉解释是:将一个v putback，得到一个新的s’，立即对s’调用get，自然应该返回v。<br>GetPut law的直觉解释是:从一个s中取出v,立即将v putback到s,对s没有影响，自然应该返回s。    </p>
+<p><img src="/Users/kirall/Documents/blog/source/_posts/bx.png" alt="bx"><br>给定一个数据源s，我们想从中抽取部分信息作为v，则需要写一个get程序，<br>类型为Source -&gt; View。<br>用户可能修改v为v’,我们希望将这种修改反应到原来的s上，则需要写一个put程序，<br>类型为Source -&gt; View -&gt; Source。<br>对于任意get,put，如果它们满足GetPut和PutGet law，则是Well-Behaved。<br>PutGet law的直觉解释是:将一个v putback，得到一个新的s’，立即对s’调用get，自然应该返回v。<br>GetPut law的直觉解释是:从一个s中取出v，立即将v putback到s，对s没有影响，自然应该返回s。    </p>
 <h2 id="Bidirectional_Language">Bidirectional Language</h2>
 <p>通常程序员需要分开写get和put两个程序。首先Well-Behavedness难以保证，程序员一般不会去check；其次修改一个程序，另一个程序也需要修改。<br>Bidirectional language程序是一份可以从中derive出get和put的描述。从中derive出的get和put是保证Well-Behaved。</p>
 <p><pre><code><br> dGet :: BLProg -&gt; Source -&gt; View<br> dPut :: BLProg -&gt; Source -&gt; View -&gt; Source<br></code></pre><br>将dGet partial apply到BL程序就可以得到想要的get；将dPut partial apply到BL程序就可以得到想要的put。</p>
@@ -101,7 +101,7 @@
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/Programming Language/">Programming Language</a>
+  <a class="article-category-link" href="/categories/程序语言/">程序语言</a>
 </div>
 
 
@@ -173,11 +173,9 @@
 	<p class="asidetitle">分类</p>
 		<ul>
 		
-			<li><a href="/categories/Programming Language/" title="Programming Language">Programming Language<sup>1</sup></a></li>
-		
 			<li><a href="/categories/并发模型/" title="并发模型">并发模型<sup>1</sup></a></li>
 		
-			<li><a href="/categories/程序语言/" title="程序语言">程序语言<sup>1</sup></a></li>
+			<li><a href="/categories/程序语言/" title="程序语言">程序语言<sup>2</sup></a></li>
 		
 			<li><a href="/categories/计算理论/" title="计算理论">计算理论<sup>1</sup></a></li>
 		
