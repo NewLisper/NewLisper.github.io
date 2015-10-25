@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Bidirectional Transformation | lambda the ultimate</title>
+    <title>读书会-第一期 | lambda the ultimate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="NewLisper">
     
-    <meta name="description" content="Bidirectional Transformation
-给定一个数据源s，我们想从中抽取部分信息作为v，则需要写一个get程序，类型为Source -&amp;gt; View。用户可能修改v为v’,我们希望将这种修改反应到原来的s上，则需要写一个put程序，类型为Source -&amp;gt; View -&amp;">
+    <meta name="description" content="读书会简介
+&amp;emsp;&amp;emsp;读书会是由Lab里postdoc发起的经典PL书籍自学活动，每周一次。第一本教材是《Algebra of programming》，暂时我也不太懂是干嘛的，但毕竟是老司机选的。后续的教材可能是《Practical Foundations for Programmi">
     
     
     
@@ -69,12 +69,12 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2015/10/24/bx/" title="Bidirectional Transformation" itemprop="url">Bidirectional Transformation</a>
+      <a href="/2015/10/25/reading1/" title="读书会-第一期" itemprop="url">读书会-第一期</a>
   </h1>
   <p class="article-author">By
       <a href="http://yoursite.com/about" title="NewLisper" target="_blank">NewLisper</a>
   <p class="article-time">
-    <time datetime="2015-10-24T12:04:50.000Z" itemprop="datePublished">发表于10月 24 2015</time>
+    <time datetime="2015-10-25T03:29:19.000Z" itemprop="datePublished">发表于10月 25 2015</time>
     
   </p>
 </header>
@@ -84,17 +84,148 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Bidirectional_Transformation"><span class="toc-number">1.</span> <span class="toc-text">Bidirectional Transformation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bidirectional_Language"><span class="toc-number">2.</span> <span class="toc-text">Bidirectional Language</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#My_research"><span class="toc-number">3.</span> <span class="toc-text">My research</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#读书会简介"><span class="toc-number">1.</span> <span class="toc-text">读书会简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一期主要内容"><span class="toc-number">2.</span> <span class="toc-text">第一期主要内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#foldr与foldl"><span class="toc-number">3.</span> <span class="toc-text">foldr与foldl</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="Bidirectional_Transformation">Bidirectional Transformation</h2>
-<p><img src="../../../../images/bx.png" alt=""><br>给定一个数据源s，我们想从中抽取部分信息作为v，则需要写一个get程序，类型为Source -&gt; View。<br>用户可能修改v为v’,我们希望将这种修改反应到原来的s上，则需要写一个put程序，类型为Source -&gt; View -&gt; Source。<br>对于任意get,put，如果它们满足GetPut和PutGet law，则是Well-Behaved。<br>PutGet law的直觉解释是:将一个v putback，得到一个新的s’，立即对s’调用get，自然应该返回v。<br>GetPut law的直觉解释是:从一个s中取出v，立即将v putback到s，对s没有影响，自然应该返回s。    </p>
-<h2 id="Bidirectional_Language">Bidirectional Language</h2>
-<p>通常程序员需要分开写get和put两个程序。首先Well-Behavedness难以保证，程序员一般不会去check；其次修改一个程序，另一个程序也需要修改。<br>Bidirectional language程序是一份可以从中derive出get和put的描述。从中derive出的get和put是保证Well-Behaved。</p>
-<p><pre><code><br> dGet :: BLProg -&gt; Source -&gt; View<br> dPut :: BLProg -&gt; Source -&gt; View -&gt; Source<br></code></pre><br>将dGet partial apply到BL程序就可以得到想要的get；将dPut partial apply到BL程序就可以得到想要的put。</p>
-<h2 id="My_research">My research</h2>
-<p>目前lab里设计了一种put-based Bidirectional language，用户在写程序的时候实际上是在指定putback的语义。我用一个月时间看懂了源码并添加了一些语法糖。<br>如果你的研究或应用领域存在需要经常写这些get和put程序的场景，请联系我！  </p>
+		<h2 id="读书会简介">读书会简介</h2>
+<p>&emsp;&emsp;读书会是由Lab里postdoc发起的经典PL书籍自学活动，每周一次。第一本教材是《Algebra of programming》，暂时我也不太懂是干嘛的，但毕竟是老司机选的。后续的教材可能是《Practical Foundations for Programming Languages》，这一本也是我当本科生PL课程TA时导师推荐的，但是由于当时要上《Types and programming language》，一直没来得及看完。   </p>
+<h2 id="第一期主要内容">第一期主要内容</h2>
+<p>&emsp;&emsp;第一期主要内容选自《Algebra of programming》第一章，分两部分:介绍FP里经典的foldr和foldl的定义，并用foldr来定义foldl；扩展fold，对于任意datatype有通用的方法定义对应的fold。</p>
+<h2 id="foldr与foldl">foldr与foldl</h2>
+<pre><code>
+  foldr :: b -> (a -> b -> b) -> [a] -> b
+  foldr d f [] = d
+  foldr d f (x:xs) = f x (foldr d f xs)
+
+  foldl :: b -> (b -> a -> b) -> [a] -> b
+  foldl d f [] = d
+  foldl d f (x:xs) = foldl (f d x) f xs
+</code></pre>
+
+<p>&emsp;&emsp;以上是foldr和foldl的定义，熟悉FP或者看过《Sicp》的程序员肯定能理解。</p>
+<pre><code>
+   data List a = Nil | Con a (List a)
+   (Con 1 (Con 2 (Con 3 Nil))) :: List Int
+
+   foldr: (f 1 (f 2 (f 3 d)))
+                           f
+                          / \
+                         1   f
+                            / \
+                           2   f
+                              / \
+                             3   d
+   foldl: (f (f (f d 1) 2) 3)
+                           f
+                          / \
+                         f   3
+                        / \
+                       f   2
+                      / \
+                     d   1    
+
+</code></pre>
+&emsp;&emsp;假设有如图list，foldr就是将Nil换成d，将Con换成f；foldl则是一种迭代的方式，根据每个list元素更新accumulator。
+
+&emsp;&emsp;现在问题是要用foldr来定义foldl，先不看下面的答案，自己思考下。
+
+<pre><code>
+  foldl :: (b -> a -> b) -> [a] -> b -> b
+  foldl f [] d = d
+  foldl f (x:xs) d = foldl f xs (f d x) 
+</code></pre>
+
+<p>&emsp;&emsp;首先调换之前版本foldl的参数顺序。</p>
+<pre><code>
+  foldl :: (b -> a -> b) -> [a] -> (b -> b)
+  foldl f [] = id  -- \d -> d is just id function
+  foldl f (x:xs) = \d -> foldl f xs (f d x) 
+</code></pre>
+
+<p>&emsp;&emsp;接着将foldl写成partial apply版本，返回一个b -&gt; b function。</p>
+<pre><code>
+  flip :: (a -> b -> c) -> b -> a -> c
+
+  foldl :: (b -> a -> b) -> [a] -> (b -> b)
+  foldl f [] = id  
+  foldl f (x:xs) = \d -> (foldl f xs) . (flip f x) d 
+</code></pre>
+
+<p>&emsp;&emsp;这里需要引入flip，flip接收一个a -&gt; b -&gt; c类型的function，返回一个b -&gt; a -&gt; c类型的function，也就是调换两个参数的顺序。(foldl f xs)返回一个b -&gt; b的function，(flip f x)返回一个b -&gt; b的function，因此可以写成如上等价的compose形式。</p>
+<pre><code>
+  foldl :: (b -> a -> b) -> [a] -> (b -> b)
+  foldl f [] = id  
+  foldl f (x:xs) = (foldl f xs) . (flip f x)
+</code></pre>
+
+<p>&emsp;&emsp;应用Eta－conversion得到如上代码。</p>
+<pre><code>
+  id . (flip f 3) . (flip f 2) . (flip f 1)
+</code></pre>
+
+<p>&emsp;&emsp;对于之前的list应用这个版本的foldl得到如上结果。然而这有什么卵用呢？</p>
+<pre><code>
+  map \i -> (flip f i) ls  -- f is from some context,for now we write it informally
+  (Con (flip f 1) (Con (flip f 2) (Con (flip f 3) Nil)))
+</code></pre>
+
+<p>&emsp;&emsp;看到这里你应该能猜到如何用foldr将上面map过的list转化为上上代码。只需将Nil换成id，将Con换成(flip (.))，也就是交换顺序的function composition。</p>
+<pre><code>
+  foldl :: (b -> a -> b) -> [a] -> (b -> b)
+  foldl f xs = foldr id (flip (.)) (map (\i -> flip f i) xs) 
+
+  via fusion law :
+  foldl f = foldr id ( (flip (.)) . (\i -> flip f i) )
+</code></pre>
+
+<p>&emsp;&emsp;因此可以用foldr写出如上的partial版本的foldl，根据fusion law还可以进一步化简。</p>
+<pre><code>
+  foldl :: b -> (b -> a -> b) -> [a] -> b
+  foldl d f xs = (foldr id (flip (.)) (map (\i -> flip f i) xs)) d
+</code></pre>
+&emsp;&emsp;最终答案只需再apply d一次即可。
+
+<pre><code>
+  foldl :: b -> (b -> a -> b) -> [a] -> b
+  foldl d f xs = (foldr id (\curEle -> \preFun -> (\curD -> preFun (f curD curEle))) xs) d
+</code></pre>
+&emsp;&emsp;以上是我写的版本，其实原理和之前的代码一样。
+
+##万能的fold
+<pre><code>
+  data Nat = Zero | Succ Nat
+
+  foldn :: b -> (b -> b) -> Nat -> b
+  foldn d f Zero = d
+  foldn d f (Succ n) = f (foldn d f n)
+</code></pre>
+
+<p>&emsp;&emsp;在这部分只会关注各datatype的foldr写法。先用自然数来热热身。</p>
+<pre><code>
+  data BTree a = Tip a | Bin (BTree a) (BTree a)
+</code></pre>
+
+<p>&emsp;&emsp;那么binary tree的foldr怎么写呢，可以自己先思考下。</p>
+<pre><code>
+  foldb :: a -> (a -> a -> a) -> BTree a -> a
+  foldb d f (Tip _) = d
+  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)
+</code></pre>
+
+<p>&emsp;&emsp;这题是我负责做的，一开始我写的版本如上。但是不够general，只能将BTree a类型fold到a类型。</p>
+<pre><code>
+  foldb :: (a -> b) -> (b -> b -> b) -> BTree a -> b
+  foldb d f (Tip e) = d e
+  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)
+</code></pre>
+
+<p>&emsp;&emsp;后来我想到可以将default value d换成a -&gt; b类型，并修改f的类型，最后得到正确结果。</p>
+<pre><code>
+  data GTree a = Node a [(GTree a)]
+</code></pre>
+
+<p>&emsp;&emsp;最后这道题许多人都做错或者不够general，你可以试试。如果理解了根据datatype写fold的本质，就能顺利写出正确答案。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -107,7 +238,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/bx/">bx</a>
+  <span></span> <a href="/tags/program calculation/">program calculation</a>
   </div>
 
 
@@ -145,19 +276,11 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2015/10/25/reading1/" title="读书会-第一期">
-  <strong>上一篇：</strong><br/>
-  <span>
-  读书会-第一期</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2015/08/01/future/"  title="future and promise">
+<a href="/2015/10/24/bx/"  title="Bidirectional Transformation">
  <strong>下一篇：</strong><br/> 
- <span>future and promise
+ <span>Bidirectional Transformation
 </span>
 </a>
 </div>
