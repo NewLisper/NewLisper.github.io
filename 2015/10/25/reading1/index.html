@@ -111,7 +111,7 @@
 <p><pre><code><br>  data Nat = Zero | Succ Nat<br>  foldn :: b -&gt; (b -&gt; b) -&gt; Nat -&gt; b<br>  foldn d f Zero = d<br>  foldn d f (Succ n) = f (foldn d f n)<br></code></pre><br>&emsp;&emsp;在这部分只会关注各datatype的foldr写法。先用自然数来热热身。</p>
 <p><pre><code><br>  data BTree a = Tip a | Bin (BTree a) (BTree a)<br></code></pre><br>&emsp;&emsp;那么binary tree的foldr怎么写呢，可以自己先思考下。</p>
 <p><pre><code><br>  foldb :: b -&gt; (b -&gt; b -&gt; b) -&gt; BTree a -&gt; b<br>  foldb d f (Tip _) = d<br>  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)<br></code></pre><br>&emsp;&emsp;这题是我负责做的，一开始我写的版本如上。但是fold过程中没用到a类型信息。</p>
-<p><pre><code><br>  foldb :: (a -&gt; b) -&gt; (b -&gt; b -&gt; b) -&gt; BTree a -&gt; b<br>  foldb d f (Tip e) = d e<br>  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)<br></code></pre><br>&emsp;&emsp;后来我想到可以将default value d换成a -&gt; b类型，并修改f的类型，最后得到正确结果。</p>
+<p><pre><code><br>  foldb :: (a -&gt; b) -&gt; (b -&gt; b -&gt; b) -&gt; BTree a -&gt; b<br>  foldb d f (Tip e) = d e<br>  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)<br></code></pre><br>&emsp;&emsp;后来我想到可以将default value d换成a -&gt; b类型，最后得到正确结果。</p>
 <p><pre><code><br>  data GTree a = Node a [(GTree a)]<br></code></pre><br>&emsp;&emsp;最后这道题许多人都做错或者不够general，你可以试试。如果理解了根据datatype写fold的本质，就能顺利写出正确答案。</p>
   
 	</div>
