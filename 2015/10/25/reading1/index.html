@@ -84,7 +84,7 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#读书会简介"><span class="toc-number">1.</span> <span class="toc-text">读书会简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一期主要内容"><span class="toc-number">2.</span> <span class="toc-text">第一期主要内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#foldr与foldl"><span class="toc-number">3.</span> <span class="toc-text">foldr与foldl</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#读书会简介"><span class="toc-number">1.</span> <span class="toc-text">读书会简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一期主要内容"><span class="toc-number">2.</span> <span class="toc-text">第一期主要内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#foldr与foldl"><span class="toc-number">3.</span> <span class="toc-text">foldr与foldl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#万能的fold"><span class="toc-number">4.</span> <span class="toc-text">万能的fold</span></a></li></ol>
 		
 		</div>
 		
@@ -93,139 +93,29 @@
 <h2 id="第一期主要内容">第一期主要内容</h2>
 <p>&emsp;&emsp;第一期主要内容选自《Algebra of programming》第一章，分两部分:介绍FP里经典的foldr和foldl的定义，并用foldr来定义foldl；扩展fold，对于任意datatype有通用的方法定义对应的fold。</p>
 <h2 id="foldr与foldl">foldr与foldl</h2>
-<pre><code>
-  foldr :: b -> (a -> b -> b) -> [a] -> b
-  foldr d f [] = d
-  foldr d f (x:xs) = f x (foldr d f xs)
-
-  foldl :: b -> (b -> a -> b) -> [a] -> b
-  foldl d f [] = d
-  foldl d f (x:xs) = foldl (f d x) f xs
-</code></pre>
-
-<p>&emsp;&emsp;以上是foldr和foldl的定义，熟悉FP或者看过《Sicp》的程序员肯定能理解。</p>
-<pre><code>
-   data List a = Nil | Con a (List a)
-   (Con 1 (Con 2 (Con 3 Nil))) :: List Int
-
-   foldr: (f 1 (f 2 (f 3 d)))
-                           f
-                          / \
-                         1   f
-                            / \
-                           2   f
-                              / \
-                             3   d
-   foldl: (f (f (f d 1) 2) 3)
-                           f
-                          / \
-                         f   3
-                        / \
-                       f   2
-                      / \
-                     d   1    
-
-</code></pre>
-&emsp;&emsp;假设有如图list，foldr就是将Nil换成d，将Con换成f；foldl则是一种迭代的方式，根据每个list元素更新accumulator。
-
-&emsp;&emsp;现在问题是要用foldr来定义foldl，先不看下面的答案，自己思考下。
-
-<pre><code>
-  foldl :: (b -> a -> b) -> [a] -> b -> b
-  foldl f [] d = d
-  foldl f (x:xs) d = foldl f xs (f d x) 
-</code></pre>
-
-<p>&emsp;&emsp;首先调换之前版本foldl的参数顺序。</p>
-<pre><code>
-  foldl :: (b -> a -> b) -> [a] -> (b -> b)
-  foldl f [] = id  -- \d -> d is just id function
-  foldl f (x:xs) = \d -> foldl f xs (f d x) 
-</code></pre>
-
-<p>&emsp;&emsp;接着将foldl写成partial apply版本，返回一个b -&gt; b function。</p>
-<pre><code>
-  flip :: (a -> b -> c) -> b -> a -> c
-
-  foldl :: (b -> a -> b) -> [a] -> (b -> b)
-  foldl f [] = id  
-  foldl f (x:xs) = \d -> (foldl f xs) . (flip f x) d 
-</code></pre>
-
-<p>&emsp;&emsp;这里需要引入flip，flip接收一个a -&gt; b -&gt; c类型的function，返回一个b -&gt; a -&gt; c类型的function，也就是调换两个参数的顺序。(foldl f xs)返回一个b -&gt; b的function，(flip f x)返回一个b -&gt; b的function，因此可以写成如上等价的compose形式。</p>
-<pre><code>
-  foldl :: (b -> a -> b) -> [a] -> (b -> b)
-  foldl f [] = id  
-  foldl f (x:xs) = (foldl f xs) . (flip f x)
-</code></pre>
-
-<p>&emsp;&emsp;应用Eta－conversion得到如上代码。</p>
-<pre><code>
-  id . (flip f 3) . (flip f 2) . (flip f 1)
-</code></pre>
-
-<p>&emsp;&emsp;对于之前的list应用这个版本的foldl得到如上结果。然而这有什么卵用呢？</p>
-<pre><code>
-  map \i -> (flip f i) ls  -- f is from some context,for now we write it informally
-  (Con (flip f 1) (Con (flip f 2) (Con (flip f 3) Nil)))
-</code></pre>
-
-<p>&emsp;&emsp;看到这里你应该能猜到如何用foldr将上面map过的list转化为上上代码。只需将Nil换成id，将Con换成(flip (.))，也就是交换顺序的function composition。</p>
-<pre><code>
-  foldl :: (b -> a -> b) -> [a] -> (b -> b)
-  foldl f xs = foldr id (flip (.)) (map (\i -> flip f i) xs) 
-
-  via fusion law :
-  foldl f = foldr id ( (flip (.)) . (\i -> flip f i) )
-</code></pre>
-
-<p>&emsp;&emsp;因此可以用foldr写出如上的partial版本的foldl，根据fusion law还可以进一步化简。</p>
-<pre><code>
-  foldl :: b -> (b -> a -> b) -> [a] -> b
-  foldl d f xs = (foldr id (flip (.)) (map (\i -> flip f i) xs)) d
-</code></pre>
-&emsp;&emsp;最终答案只需再apply d一次即可。
-
-<pre><code>
-  foldl :: b -> (b -> a -> b) -> [a] -> b
-  foldl d f xs = (foldr id (\curEle -> \preFun -> (\curD -> preFun (f curD curEle))) xs) d
-</code></pre>
-&emsp;&emsp;以上是我写的版本，其实原理和之前的代码一样。
-
-##万能的fold
-<pre><code>
-  data Nat = Zero | Succ Nat
-
-  foldn :: b -> (b -> b) -> Nat -> b
-  foldn d f Zero = d
-  foldn d f (Succ n) = f (foldn d f n)
-</code></pre>
-
-<p>&emsp;&emsp;在这部分只会关注各datatype的foldr写法。先用自然数来热热身。</p>
-<pre><code>
-  data BTree a = Tip a | Bin (BTree a) (BTree a)
-</code></pre>
-
-<p>&emsp;&emsp;那么binary tree的foldr怎么写呢，可以自己先思考下。</p>
-<pre><code>
-  foldb :: a -> (a -> a -> a) -> BTree a -> a
-  foldb d f (Tip _) = d
-  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)
-</code></pre>
-
-<p>&emsp;&emsp;这题是我负责做的，一开始我写的版本如上。但是不够general，只能将BTree a类型fold到a类型。</p>
-<pre><code>
-  foldb :: (a -> b) -> (b -> b -> b) -> BTree a -> b
-  foldb d f (Tip e) = d e
-  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)
-</code></pre>
-
-<p>&emsp;&emsp;后来我想到可以将default value d换成a -&gt; b类型，并修改f的类型，最后得到正确结果。</p>
-<pre><code>
-  data GTree a = Node a [(GTree a)]
-</code></pre>
-
-<p>&emsp;&emsp;最后这道题许多人都做错或者不够general，你可以试试。如果理解了根据datatype写fold的本质，就能顺利写出正确答案。</p>
+<p><pre><code><br>  foldr :: b -&gt; (a -&gt; b -&gt; b) -&gt; [a] -&gt; b<br>  foldr d f [] = d<br>  foldr d f (x:xs) = f x (foldr d f xs)</p>
+<p>  foldl :: b -&gt; (b -&gt; a -&gt; b) -&gt; [a] -&gt; b<br>  foldl d f [] = d<br>  foldl d f (x:xs) = foldl (f d x) f xs<br></code></pre><br>&emsp;&emsp;以上是foldr和foldl的定义，熟悉FP或者看过《Sicp》的程序员肯定能理解。</p>
+<p><pre><code><br>   data List a = Nil | Con a (List a)<br>   (Con 1 (Con 2 (Con 3 Nil))) :: List Int</p>
+<p>   foldr: (f 1 (f 2 (f 3 d)))<br>                           f<br>                          / \<br>                         1   f<br>                            / \<br>                           2   f<br>                              / \<br>                             3   d<br>   foldl: (f (f (f d 1) 2) 3)<br>                           f<br>                          / \<br>                         f   3<br>                        / \<br>                       f   2<br>                      / \<br>                     d   1    </p>
+<p></code></pre><br>&emsp;&emsp;假设有如图list，foldr就是将Nil换成d，将Con换成f；foldl则是一种迭代的方式，根据每个list元素更新accumulator。<br>&emsp;&emsp;现在问题是要用foldr来定义foldl，先不看下面的答案，自己思考下。</p>
+<p><pre><code><br>  foldl :: (b -&gt; a -&gt; b) -&gt; [a] -&gt; b -&gt; b<br>  foldl f [] d = d<br>  foldl f (x:xs) d = foldl f xs (f d x)<br></code></pre><br>&emsp;&emsp;首先调换之前版本foldl的参数顺序。</p>
+<p><pre><code><br>  foldl :: (b -&gt; a -&gt; b) -&gt; [a] -&gt; (b -&gt; b)<br>  foldl f [] = id  — \d -&gt; d is just id function<br>  foldl f (x:xs) = \d -&gt; foldl f xs (f d x)<br></code></pre><br>&emsp;&emsp;接着将foldl写成partial apply版本，返回一个b -&gt; b function。</p>
+<p><pre><code><br>  flip :: (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c</p>
+<p>  foldl :: (b -&gt; a -&gt; b) -&gt; [a] -&gt; (b -&gt; b)<br>  foldl f [] = id<br>  foldl f (x:xs) = \d -&gt; (foldl f xs) . (flip f x) d<br></code></pre><br>&emsp;&emsp;这里需要引入flip，flip接收一个a -&gt; b -&gt; c类型的function，返回一个b -&gt; a -&gt; c类型的function，也就是调换两个参数的顺序。(foldl f xs)返回一个b -&gt; b的function，(flip f x)返回一个b -&gt; b的function，因此可以写成如上等价的compose形式。</p>
+<p><pre><code><br>  foldl :: (b -&gt; a -&gt; b) -&gt; [a] -&gt; (b -&gt; b)<br>  foldl f [] = id<br>  foldl f (x:xs) = (foldl f xs) . (flip f x)<br></code></pre><br>&emsp;&emsp;应用Eta－conversion得到如上代码。</p>
+<p><pre><code><br>  id . (flip f 3) . (flip f 2) . (flip f 1)<br></code></pre><br>&emsp;&emsp;对于之前的list应用这个版本的foldl得到如上结果。然而这有什么卵用呢？</p>
+<p><pre><code><br>  map \i -&gt; (flip f i) ls  — f is from some context,for now we write it informally<br>  (Con (flip f 1) (Con (flip f 2) (Con (flip f 3) Nil)))<br></code></pre><br>&emsp;&emsp;看到这里你应该能猜到如何用foldr将上面map过的list转化为上上代码。只需将Nil换成id，将Con换成(flip (.))，也就是交换顺序的function composition。</p>
+<p><pre><code><br>  foldl :: (b -&gt; a -&gt; b) -&gt; [a] -&gt; (b -&gt; b)<br>  foldl f xs = foldr id (flip (.)) (map (\i -&gt; flip f i) xs) </p>
+<p>  via fusion law :<br>  foldl f = foldr id ( (flip (.)) . (\i -&gt; flip f i) )<br></code></pre><br>&emsp;&emsp;因此可以用foldr写出如上的partial版本的foldl，根据fusion law还可以进一步化简。</p>
+<p><pre><code><br>  foldl :: b -&gt; (b -&gt; a -&gt; b) -&gt; [a] -&gt; b<br>  foldl d f xs = (foldr id (flip (.)) (map (\i -&gt; flip f i) xs)) d<br></code></pre><br>&emsp;&emsp;最终答案只需再apply d一次即可。</p>
+<p><pre><code><br>  foldl :: b -&gt; (b -&gt; a -&gt; b) -&gt; [a] -&gt; b<br>  foldl d f xs = (foldr id (\curEle -&gt; \preFun -&gt; (\curD -&gt; preFun (f curD curEle))) xs) d<br></code></pre><br>&emsp;&emsp;以上是我写的版本，其实原理和之前的代码一样。</p>
+<h2 id="万能的fold">万能的fold</h2>
+<p><pre><code><br>  data Nat = Zero | Succ Nat</p>
+<p>  foldn :: b -&gt; (b -&gt; b) -&gt; Nat -&gt; b<br>  foldn d f Zero = d<br>  foldn d f (Succ n) = f (foldn d f n)<br></code></pre><br>&emsp;&emsp;在这部分只会关注各datatype的foldr写法。先用自然数来热热身。</p>
+<p><pre><code><br>  data BTree a = Tip a | Bin (BTree a) (BTree a)<br></code></pre><br>&emsp;&emsp;那么binary tree的foldr怎么写呢，可以自己先思考下。</p>
+<p><pre><code><br>  foldb :: a -&gt; (a -&gt; a -&gt; a) -&gt; BTree a -&gt; a<br>  foldb d f (Tip _) = d<br>  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)<br></code></pre><br>&emsp;&emsp;这题是我负责做的，一开始我写的版本如上。但是不够general，只能将BTree a类型fold到a类型。</p>
+<p><pre><code><br>  foldb :: (a -&gt; b) -&gt; (b -&gt; b -&gt; b) -&gt; BTree a -&gt; b<br>  foldb d f (Tip e) = d e<br>  foldb d f (Bin t1 t2) = f (foldb d f t1) (foldb d f t2)<br></code></pre><br>&emsp;&emsp;后来我想到可以将default value d换成a -&gt; b类型，并修改f的类型，最后得到正确结果。</p>
+<p><pre><code><br>  data GTree a = Node a [(GTree a)]<br></code></pre><br>&emsp;&emsp;最后这道题许多人都做错或者不够general，你可以试试。如果理解了根据datatype写fold的本质，就能顺利写出正确答案。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
