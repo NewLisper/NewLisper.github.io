@@ -168,7 +168,7 @@ public void onYButtonPressed(){
     acommand = c;
 }
 ...
-</code></pre><p>}<br></code></pre><br>&emsp;&emsp;以上代码就是之前伪码的纯面向对象版本，大部分书籍博客都是以这种方式介绍Command Pattern的。execute延迟了side effect计算，并对外提供了统一接口(xxx.execute( )相当于之前apply ( ))。</p>
+</code></pre><p>}<br></code></pre><br>&emsp;&emsp;以上代码就是之前伪码的纯面向对象版本，大部分书籍博客都是以这种方式介绍Command Pattern的。execute延迟了side effect计算，并对外提供了统一接口(xxx.execute( )相当于之前apply ( ))。实现Command接口使得这些延迟函数成为first-class对象，可以传递返回存放。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
