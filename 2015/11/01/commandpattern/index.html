@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>编译与解释 | lambda the ultimate</title>
+    <title>Command Pattern from Computing Perspective | lambda the ultimate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="NewLisper">
     
-    <meta name="description" content="编译与解释
-&amp;emsp;&amp;emsp;学过编译原理的人都了解编译的概念，即将某种高级语言转化为等价的汇编指令来让机器执行。不过这只是比较常见的一种编译形式，所有语言之间等价语义的转换过程都可以叫作编译过程。用自然语言来类比，英语汉语之间的翻译过程就是一种编译，只不过由于自然语言属于上下文有关语言，相关">
+    <meta name="description" content="设计模式系列简介
+&amp;emsp;&amp;emsp;不知不觉在Computer Science的路上越走越远，都快忘记自己是一名Software Engineer。设计模式系列是我bridge两者的一次尝试，它将从计算思维，函数式，及类型理论相关的角度解释每个模式。虽然我会尽量使每一篇都self-contai">
     
     
     
@@ -69,12 +69,12 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/09/06/compileandintp/" title="编译与解释" itemprop="url">编译与解释</a>
+      <a href="/2015/11/01/commandpattern/" title="Command Pattern from Computing Perspective" itemprop="url">Command Pattern from Computing Perspective</a>
   </h1>
   <p class="article-author">By
       <a href="http://yoursite.com/about" title="NewLisper" target="_blank">NewLisper</a>
   <p class="article-time">
-    <time datetime="2014-09-05T19:43:21.000Z" itemprop="datePublished">发表于9月 6 2014</time>
+    <time datetime="2015-11-01T06:54:43.000Z" itemprop="datePublished">发表于11月 1 2015</time>
     
   </p>
 </header>
@@ -84,29 +84,104 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#编译与解释"><span class="toc-number">1.</span> <span class="toc-text">编译与解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编译与元编程"><span class="toc-number">2.</span> <span class="toc-text">编译与元编程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解释与计算"><span class="toc-number">3.</span> <span class="toc-text">解释与计算</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#设计模式系列简介"><span class="toc-number">1.</span> <span class="toc-text">设计模式系列简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Motivation"><span class="toc-number">2.</span> <span class="toc-text">Motivation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题的本质"><span class="toc-number">3.</span> <span class="toc-text">问题的本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对比Command_Pattern"><span class="toc-number">4.</span> <span class="toc-text">对比Command Pattern</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="编译与解释">编译与解释</h2>
-<p>&emsp;&emsp;学过编译原理的人都了解编译的概念，即将某种高级语言转化为等价的汇编指令来让机器执行。不过这只是比较常见的一种编译形式，所有语言之间等价语义的转换过程都可以叫作编译过程。用自然语言来类比，英语汉语之间的翻译过程就是一种编译，只不过由于自然语言属于上下文有关语言，相关的编译器无法构造(所以需要人肉编译器)。而解释就是语言语义执行的过程。每个人在成长过程中都生成了一台母语解释器，每当接收到母语语法文字的时候，解释器都会解释其语义。许多人在学习非母语(例如英语)的时候都会有一种隔阂感，这是因为体内不完善的编译器先将其编译到母语(很多人这个过程都会丢失或增加语义)，然后再由母语解释器解释。所以英语真正学的好的人体内都会新增一台英语解释器，当接收到英语文字的时候，直接跳过编译过程解释执行，这样语义不会改变而且响应速度很快。<br>&emsp;&emsp;在程序语言的世界里，有些语言是编译到汇编指令执行(如c,c++)，有些语言是由解释器直接解释执行(如js)。但这只是一般情况，语言不分编译型或解释型，实现方式才分。有些语言(如Scheme)既有解释器又有编译器的实现。有些语言(如Java)的实现甚至混合了编译和解释过程，Java代码首先会编译到Java字节码，然后由Java虚拟机执行。这里Java虚拟机就是一种解释器，相应的微软的.NET也是一种解释器。对于那些直接编译到汇编指令(其实其他实现方式也最终会到这一步)的语言，其解释器就是cpu和内存等硬件。</p>
-<h2 id="编译与元编程">编译与元编程</h2>
-<p>&emsp;&emsp;所谓元编程，就是编程的编程，能写代码的代码，所以编译就是一种典型的元编程。<br>&emsp;&emsp;为了允许程序员突破语言既有语法的限制而不重新实现该语言，许多语言都提供了宏机制。c语言的define宏就是一种元编程，在编译器编译之前预处理器会对源代码进行基于token的替换，这种元编程机制十分简陋，很容易出错。而程序语言的另一个极端lisp却拥有至高无上的元编程能力，也是我曾经一度追求的屠龙之技。lisp的宏之所以强大是因为lisp没有语法，那些恼人的括号和expression组成的s表达式基本可以看成抽象语法树，而lisp的宏展开系统可以直接对语法树中的语法对象进行匹配和替换。由于抽象语法树携带了语法结构信息，宏展开系统能更好的检查宏语法错误。<br>&emsp;&emsp;编程中最顶级的抽象手段就是语法抽象。数学家提出新的理论需要先定义对应的形式符号系统，才能更好的描述问题和解决问题。软件开发也类似，对特定业务如果先定义好领域特定语言，让语言来适应应用场景，不仅可以提高开发效率还能很好的解决需求变化的问题。这也是lisp被许多人神话为屠龙之技的原因。<br>&emsp;&emsp;但是一般的公司不会允许程序员随意使用宏，因为新增的语法你的队友很有可能不清楚该怎么正确使用，一旦出现bug很难跟踪。工程界最重要的就是统一标准，而语言内置的语法有统一标准，程序员可以看官方手册学习。</p>
-<h2 id="解释与计算">解释与计算</h2>
-<p>&emsp;&emsp;计算机是数学家一次失败思考的产物。 ——无名氏<br>&emsp;&emsp;曾经有一个追梦少年，他梦想将人类的思想用一种形式语言系统来描述，并基于这个系统做计算，从而得出所有真理，他就是莱布尼茨。但是他在有生之年未能完成他的梦想。<br>&emsp;&emsp;在他死后多年，数学家乔治・布尔提出了一种符号逻辑(布尔逻辑)。<br>&emsp;&emsp;后来数学家弗雷格又在布尔的基础上建立了数理逻辑的原型，至此离莱布尼茨当初的梦想越来越近了。<br>&emsp;&emsp;同样有着莱布尼茨之梦的数学家希尔伯特(川大小神童的偶像哟)希望为所有的数学建立统一的形式系统，并能从该系统证明出所有的数学真命题。<br>&emsp;&emsp;然而随后哥德尔以其天才的证明方法证明了这种系统是不完备的。对于任意一个包含了一阶逻辑(数理逻辑基础)和初等数论公理(初等数论是所有数学的一部分)的形式系统，都存在某个命题，它既不能被证明是真的也不能被证明是假的，这就是著名的哥德尔不完备性定理。这条定理同时也部分否定了莱布尼茨的梦想，人类无法构造一套形式系统来产生所有的真理，必定存在不可证明的真理。<br>&emsp;&emsp;希尔伯特得知这一点后很失望但也接受了这一事实。他想退而求其次，既然存在不能证明的命题，那么会不会存在一种有限步骤的算法能判断任意给定命题的真假呢。<br>&emsp;&emsp;阿隆佐·邱奇和图灵几乎同时给出了否定的答案，但是两人构造了两种截然不同的系统——lambda演算和图灵机。lambda演算成为几乎现代所有编程语言的基石，而图灵机则成为现代通用计算机的原型(机智的冯·诺依曼看了图灵的paper后立马意识到这个可以用来造计算机，所以现在所说的冯·诺依曼结构其实就是通用图灵机)。<br>&emsp;&emsp;之前有说cpu和内存等硬件就是汇编语言的解释器，而这种冯·诺依曼结构原型又是通用图灵机，图灵机是用来描述计算的抽象模型，所以解释的本质就是在做计算。与图灵机拥有等价计算能力的除了lambda演算还有哥德尔的递归函数，从某种角度来说它们都是解释器。</p>
+		<h2 id="设计模式系列简介">设计模式系列简介</h2>
+<p>&emsp;&emsp;不知不觉在Computer Science的路上越走越远，都快忘记自己是一名Software Engineer。设计模式系列是我bridge两者的一次尝试，它将从计算思维，函数式，及类型理论相关的角度解释每个模式。虽然我会尽量使每一篇都self-contained，但还是希望读者先阅读相关的书籍熟悉概念。</p>
+<h2 id="Motivation">Motivation</h2>
+<p>&emsp;&emsp;假设我们需要写一个游戏手柄控制器对象(只考虑ABXY四个键)，所操控的是《GTA V》中的各种角色：Michael，Trevor，Franklin，Cha…，每个键位对应不同角色的行为各不相同。</p>
+<p><pre><code><br>puclic Class controller{<br>    Character michael;<br>    Character trevor;<br>    Character franklin;<br>    Character cha;<br>    …</p>
+<pre><code>public void onAButtonPressed(){
+    <span class="keyword">if</span>(currentCharacter == michael){
+      michael.xxx();
+    }<span class="keyword">else</span> <span class="keyword">if</span>(currentCharacter == trevor){
+      trevor.xxx();
+    }<span class="keyword">else</span> <span class="keyword">if</span>(currentCharacter == franklin){
+      franklin.xxx();
+    }<span class="keyword">else</span> <span class="keyword">if</span>(currentCharacter == cha){
+      cha.xxx();
+    }<span class="keyword">else</span> <span class="keyword">if</span> <span class="keyword">...</span>
+
+} 
+
+public void onBButtonPressed(){
+    <span class="keyword">...</span>
+} 
+
+public void onXButtonPressed(){
+    <span class="keyword">...</span>
+} 
+
+public void onYButtonPressed(){
+   <span class="keyword">...</span>
+} 
+</code></pre><p>}<br></code></pre><br>&emsp;&emsp;不懂设计模式的程序员很有可能写出以上紧耦合的代码。如果要添加一个角色，每个函数中都需要增加一个分支。如果允许玩家自定义键位映射，修改起来更麻烦。</p>
+<h2 id="问题的本质">问题的本质</h2>
+<p>&emsp;&emsp;以上代码问题在于onXButtonPressed等函数中需要知道当前操控角色是谁，需要调用该角色的哪一个方法才能完成计算。然而这些并不是onXButtonPressed的计算语义的一部分，onXButtonPressed的语义仅仅是执行该键对应的某段计算(需要设置)。</p>
+<p><pre><code><br>// cha.ri() :: void<br>// () -&gt; computation needed to be delayed<br>type Command = () -&gt; void<br>Command chaRiDog = () -&gt; cha.ri()</p>
+<p>puclic Class controller{<br>    Command acommand;<br>    Command bcommand;<br>    Command xcommand;<br>    Command ycommand;</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAButtonPressed</span>(){
+    acommand ();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBButtonPressed</span>(){
+    bcommand ();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onXButtonPressed</span>(){
+    xcommand ();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onYButtonPressed</span>(){
+    ycommand ();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAButton</span>(Command c){
+    acommand = c;
+}
+...
+</code></pre><p>}<br></code></pre><br>&emsp;&emsp;以上代码混用了面向对象与函数式，所以严格上说只能算伪代码，读者不用深究代码正确性。不管哪个角色执行哪个方法，它执行的计算只是side effect，我们不需要它的返回值，所以这些计算的类型为void。而一个command本质上就是延迟化的side effect计算，在函数式里延迟一段计算的方法是用一个参数为( )的lambda表达式，所以command的类型为( ) -&gt; void。当某个键按下时，只需要将对应的command apply到 ( )即可执行被延迟的side effect计算。</p>
+<h2 id="对比Command_Pattern">对比Command Pattern</h2>
+<p><pre><code><br>public interface Command {<br>    public void execute();<br>}</p>
+<p>public class ChaRiDog implements Command{<br>    Character cha;<br>    …<br>    public void execute(){<br>        cha.ri();<br>    }<br>}</p>
+<p>Command chaRiDog = new ChaRiDog(cha);</p>
+<p>puclic Class controller{<br>    Command acommand;<br>    Command bcommand;<br>    Command xcommand;<br>    Command ycommand;</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAButtonPressed</span>(){
+    acommand.execute();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBButtonPressed</span>(){
+    bcommand.execute();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onXButtonPressed</span>(){
+    xcommand.execute();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onYButtonPressed</span>(){
+    ycommand.execute();
+} 
+
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAButton</span>(Command c){
+    acommand = c;
+}
+...
+</code></pre><p>}<br></code></pre><br>&emsp;&emsp;以上代码就是之前伪码的纯面向对象版本，大部分书籍博客都是以这种方式介绍Command Pattern的。execute延迟了side effect计算，并对外提供了统一接口(xxx.execute( )相当于之前apply ( ))。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/程序语言/">程序语言</a>
+  <a class="article-category-link" href="/categories/设计模式/">设计模式</a>
 </div>
 
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/编译/">编译</a><a href="/tags/解释/">解释</a>
+  <span></span> <a href="/tags/Command Pattern/">Command Pattern</a>
   </div>
 
 
@@ -144,19 +219,11 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2015/08/01/future/" title="future and promise">
-  <strong>上一篇：</strong><br/>
-  <span>
-  future and promise</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2014/08/30/fixpoint/"  title="fixpoint &amp; Y combinator">
+<a href="/2015/10/25/reading1/"  title="读书会-第一期">
  <strong>下一篇：</strong><br/> 
- <span>fixpoint &amp; Y combinator
+ <span>读书会-第一期
 </span>
 </a>
 </div>
