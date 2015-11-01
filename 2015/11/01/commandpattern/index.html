@@ -120,7 +120,7 @@ public void onYButtonPressed(){
 </code></pre><p>}<br></code></pre><br>&emsp;&emsp;不懂设计模式的程序员很有可能写出以上紧耦合的代码。如果要添加一个角色，每个函数中都需要增加一个分支。如果允许玩家自定义键位映射，修改起来更麻烦。</p>
 <h2 id="问题的本质">问题的本质</h2>
 <p>&emsp;&emsp;以上代码问题在于onXButtonPressed等函数中需要知道当前操控角色是谁，需要调用该角色的哪一个方法才能完成计算。然而这些并不是onXButtonPressed的计算语义的一部分，onXButtonPressed的语义仅仅是执行该键对应的某段计算(需要设置)。</p>
-<p><pre><code><br>// cha.ri() :: void<br>// () -&gt; computation needed to be delayed<br>type Command = () -&gt; void<br>Command chaRiDog = () -&gt; cha.ri()</p>
+<p><pre><code><br>// cha.ri() :: void<br>// \ () -&gt; computation needed to be delayed<br>type Command = () -&gt; void<br>Command chaRiDog = \ () -&gt; cha.ri()</p>
 <p>public Class controller{<br>    Command acommand;<br>    Command bcommand;<br>    Command xcommand;<br>    Command ycommand;</p>
 <pre><code><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAButtonPressed</span>(){
     acommand ();
